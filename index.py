@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import RPi.GPIO as GPIO
+#from IPython.display import clear_output
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(11, GPIO.OUT)
@@ -9,8 +10,9 @@ GPIO.setup(11, GPIO.OUT)
 from lib.InputHandler import InputHandler
 from lib.printTable import TableHead, printTableData
 from lib.ReadTemperature import ReadTemp
+from lib.ExternalContent import WriteToFile
 
-setPoint, material = 90, 'F'
+setPoint, material = 97, 'F'
 
 inputHandler = InputHandler(sys.argv)
 
@@ -26,9 +28,9 @@ for p in params:
     material = values[params.index(p)]
 
 # controller constants
-kp = 1 
-ki = 0 
-kd = 0
+kp = 80
+ki = 0.008
+kd = 10
 
 # controller external variables
 output = 0
@@ -38,39 +40,53 @@ temperature = ReadTemp()
 DELTA_TIME = 1
 previousTime = currentTime = time.time()
 E = Ed = Ei = lastError = 0
+processTime = 0
+DATE = time.strftime("%d%m%y")
 
-headList = ["setPoint", "Temperatura", "Output"]
+headList = ["setPoint_(C)", "Temperatura_(C)", "Output", "Tiempo_(min)"]
 headTable = TableHead(headList)
+os.system("clear")
+print(headTable)
 printTableData(headList, [setPoint, temperature])
 
-while True:
-  currentTime = time.time()
-  
-  dT = currentTime - previousTime
-
-  if(dT >= DELTA_TIME):
+try:
     
-    # Error
-    E = setPoint - temperature
+    while True:
+      currentTime = time.time()
 
-    # Error Integral
-    Ei += E * dT
+      dT = currentTime - previousTime
 
-    # Error Derivativo
-    Ed = (E - lastError)/dT
+      if(dT >= DELTA_TIME):
+        temperature = ReadTemp()
+        processTime += dT
 
-    # Output
-    output = kp*E + ki*Ei + kd*Ei
+        # Error
+        E = setPoint - temperature
 
-    if output > 0:
-      GPIO.output(11, True)
-    else:
-      GPIO.output(11, False)
+        # Error Integral
+        Ei += E * dT
 
-    # Imprimiendo Resultados
-    os.system("clear")
-    print(headTable)
-    printTableData(headList, [setPoint ,temperature, output])
-    
-    lastError = E
-    previousTime = currentTime
+        # Error Derivativo
+        Ed = (E - lastError)/dT
+
+        # Output
+        output = kp*E + ki*Ei + kd*Ei
+
+        if output > 0:
+          GPIO.output(11, True)
+        else:
+          GPIO.output(11, False)
+
+        # Imprimiendo Resultados
+        os.system("clear")
+        print(headTable)
+        printTableData(headList, [setPoint ,temperature, output, (processTime/60)])
+        
+        WriteToFile(DATE, headList, [setPoint ,temperature, output, (processTime/60)])
+
+        lastError = E
+        previousTime = currentTime
+        
+except KeyboardInterrupt: 
+    print("Adios")
+    GPIO.cleanup()

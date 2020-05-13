@@ -48,9 +48,9 @@ def printTableData(headList, values):
 
   for v in values:
     if i == 0:
-      dataLine += '| {:{width}.{prec}f} |'.format(float(v), width=len(headList[i]), prec=2)
+      dataLine += '| {:^{width}.{prec}f} |'.format(float(v), width=len(headList[i]), prec=2)
     else:
-      dataLine += ' {:{width}.{prec}f} |'.format(float(v), width=len(headList[i]), prec=2)
+      dataLine += ' {:^{width}.{prec}f} |'.format(float(v), width=len(headList[i]), prec=2)
     
     i += 1
     
