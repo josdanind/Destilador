@@ -40,9 +40,20 @@ temperature = ReadTemp()
 DELTA_TIME = 1
 previousTime = currentTime = time.time()
 E = Ed = Ei = lastError = 0
-processTime = 0
 DATE = time.strftime("%d%m%y")
 
+# Tiempo Del Proceso
+data = open('050520.dat', 'r')
+lines = data.readlines()[-1].replace('\n','').split(',')
+
+try:
+  processTime = float(lines[len(lines)-1])
+except:
+  processTime = 0
+
+data.close()
+
+# Imprimir Tabla
 headList = ["setPoint_(C)", "Temperatura_(C)", "Output", "Tiempo_(min)"]
 headTable = TableHead(headList)
 os.system("clear")
