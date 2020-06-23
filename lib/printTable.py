@@ -56,3 +56,24 @@ def printTableData(headList, values):
     
   print(dataLine)
   print(HorizontalLine(headList))
+
+def adaptData(headList, values):
+    
+    ListValues = []
+    
+    if(len(headList) < len(values)):
+        print("Valores supera el número de columnas")
+        sys.exit(1)
+    
+    if(len(headList) > len(values)):
+        for e in range(len(values), len(headList)):
+          values.append(0)
+    
+    for v in values:
+        if isinstance(v, (str)):
+            ListValues.append(v)
+        else:
+            ListValues.append('{0:.2f}'.format(float(v), prec=2))
+    
+    return ListValues
+            
